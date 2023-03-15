@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/util
+                        http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+	<bean id="itemAuthorityServiceFactory"
+		  class="org.dspace.content.authority.factory.ItemAuthorityServiceFactory">
+
+		<property name="itemAthorityEntityTypeMap">
+			<map>
+			    <!-- Specify here any services to use with the relative entity type -->
+				<entry key="person" value-ref="personItemAuthorityService" />
+				<entry key="default" value-ref="itemAuthorityService" />
+			</map>
+		</property>
+
+	</bean>
+
+	<bean name="personItemAuthorityService" class="org.dspace.content.authority.PersonItemAuthorityService" />
+	<bean name="itemAuthorityService" class="org.dspace.content.authority.ItemAuthorityServiceImpl" />
+
+	<bean id="itemControlledVocabularyFactory"
+		  class="org.dspace.content.authority.factory.ItemControlledVocabularyFactory">
+
+		<property name="entityMapping">
+			<map>
+				<!-- Specify here any Item based controlled vocabulary configuration,
+				  vocabulary names are defined in item.controlled.vocabularies key-->
+				<entry key="orgunits" value-ref="orgunitsControlledVocabulary" />
+			</map>
+		</property>
+	</bean>
+
+	<bean name="orgunitsControlledVocabulary" class="org.dspace.content.authority.ItemControlledVocabulary">
+		<property name="entityType" value="OrgUnit"/>
+		<property name="parentQuery" value="entityType:OrgUnit AND -organization.parentOrganization:*"/>
+		<property name="childrenQuery" value="organization.parentOrganization_authority:{0}"/>
+		<!-- Value mapping -->
+		<property name="parentMetadata" value="organization.parentOrganization"/>
+		<property name="selectableMetadata" value=""/>
+		<property name="labelMetadata" value="dc.title"/>
+		<property name="authorityMetadata" value=""/>
+		<property name="extraValuesMapper" ref="orgunitsExtraValuesMapper"/>
+		<!-- <field_name> <order> - If empty no sorting is made -->
+		<property name="sortFieldAndOrder" value="dc.title_sort asc"/>
+	</bean>
+
+	<bean name="orgunitsExtraValuesMapper" class="org.dspace.content.authority.mapper.impl.SimpleMetadataMapper">
+		<property name="extraValues">
+			<map>
+				<entry key="display" value="dc.title" />
+				<entry key="note" value="dc.description.abstract" />
+			</map>
+		</property>
+	</bean>
+
+</beans>
